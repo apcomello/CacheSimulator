@@ -6,6 +6,8 @@
 
 const int LRU = 1;
 const int FIFO = 0;
+const int W = 1;
+const int R = 0;
 
 using namespace std;
 
@@ -58,6 +60,30 @@ int read_cache_specfication(int *line_size, int *number_lines, int *associativit
     
 }
 
+int read_trace_file(){
+    
+    ifstream file;
+    string proper_buffer;
+    string delimiter = " ";
+    string address;
+    string operation;
+    
+    int position;
+    
+    file.open("input1.bin", ios::binary | ios::in);
+    getline(file, proper_buffer);
+    
+    position = proper_buffer.find(delimiter);
+
+    address = proper_buffer.substr(0, position);
+    
+    operation = proper_buffer.substr(position + delimiter.length());
+    
+    cout << address << endl;
+    cout << operation << endl;
+    
+}
+
 int main(){
     
     int i =0;
@@ -71,7 +97,7 @@ int main(){
     cout << "Hello, world" << endl;
     cout << "This will be a cache simulator one day." << endl;
     read_cache_specfication(line_size, number_lines, associativity, replacement_policy);
-    
+    read_trace_file();
     cin >> i;
     
     return 0;
