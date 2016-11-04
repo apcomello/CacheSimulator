@@ -16,6 +16,65 @@ const int R = 0;
 
 using namespace std;
 
+/*
+    CACHE LINE
+*/
+
+class CacheLine {
+    public:
+        // bool contains_data;
+        string tag;
+        CacheLine();
+};
+
+/*
+    CACHE SET
+*/
+
+class CacheSet {
+    public:
+        vector<CacheLine> tags;
+        CacheSet(int set_lines);
+        void prepare_lines();
+        int number_set_lines;
+};
+
+/*
+    CACHE
+*/
+
+class Cache {
+    public:
+        
+        Cache(int size_block, int line_numbers, int number_sets, int policy);
+    
+        int block_size;
+        int number_lines;
+        int associativity;
+        int replacement_policy;
+        
+        vector<CacheSet> _sets;
+        
+        void prepare_cache(); //Allocs the necessary memory for all blocks in cache
+        
+        int lookup();
+        
+        long int write_hits;
+        long int write_misses;
+        long int read_hits;
+        long int read_misses;
+        long int accesses;
+        
+        
+    private:
+    
+
+        int hit();      //Returns a hit
+        int miss();     //Returns a miss
+        void LRU_policy();
+        void FIFO_policy();
+        
+};
 
 /*
     OTHER FUNCTIONS
