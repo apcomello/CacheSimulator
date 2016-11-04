@@ -4,6 +4,10 @@
 #include <sstream>
 #include <vector>
 #include <cmath>
+#include <bitset>
+#include <stdio.h>
+#include <stdlib.h>
+#include <algorithm>
 
 const int LRU = 1;
 const int FIFO = 0;
@@ -12,7 +16,12 @@ const int R = 0;
 
 using namespace std;
 
-int read_cache_specfication(int *block_size, int *number_lines, int *associativity, int *replacement_policy){
+
+/*
+    OTHER FUNCTIONS
+*/
+
+int read_cache_specfication(char* file_name, int *block_size, int *number_lines, int *associativity, int *replacement_policy){
     
     int i =0;
     int position;
@@ -24,7 +33,7 @@ int read_cache_specfication(int *block_size, int *number_lines, int *associativi
         
     ifstream file;
     
-    file.open("cachedesc.bin", ios::binary | ios::in);
+    file.open(file_name, ios::binary | ios::in);
     
     for(i = 0; i < 4; i++){
         getline(file, proper_buffer);
@@ -34,7 +43,7 @@ int read_cache_specfication(int *block_size, int *number_lines, int *associativi
         
         if (token.find('\r') == token.length()-1)
             token.erase(token.length()-1, 1);
-        
+                
         switch(i){
             case 0:
                 istringstream(token) >> *block_size;
@@ -53,36 +62,7 @@ int read_cache_specfication(int *block_size, int *number_lines, int *associativi
                 break;
         }
     }
-    
-    cout << *block_size << endl;
-    cout << *number_lines << endl;
-    cout << *associativity << endl;
-    cout << *replacement_policy << endl;
-    
-}
-
-int read_trace_file(){
-    
-    ifstream file;
-    string proper_buffer;
-    string delimiter = " ";
-    string address;
-    string operation;
-    
-    int position;
-    
-    file.open("input1.bin", ios::binary | ios::in);
-    getline(file, proper_buffer);
-    
-    position = proper_buffer.find(delimiter);
-
-    address = proper_buffer.substr(0, position);
-    
-    operation = proper_buffer.substr(position + delimiter.length());
-    
-    cout << address << endl;
-    cout << operation << endl;
-    
+    return 0;
 }
 
 int calculate_offset(int block_size){
@@ -94,30 +74,83 @@ int calculate_set(int associativity, int number_lines){
 }
 
 int calculate_tag(int offset_bits, int set_bits){
-    return 64 - offset_bits - set_bits;
+    return 64 - offset_bits;
 }
 
-int split_address(string address, int block_size, int associativity, int number_lines){
+int split_address(string address, int block_size, int associativity, int number_lines, string *offset, string *index, string *tag){
+        
+    int offset_bits = calculate_offset(block_size);
+    int set_bits = calculate_set(associativity, number_lines);
+    int tag_bits = calculate_tag(offset_bits, set_bits);
+
+    
+    *tag = address.substr(0, tag_bits);
+    *index = address.substr(tag_bits-set_bits, set_bits);
+    *offset = address.substr(set_bits+tag_bits, offset_bits);
+    
+    return 0;
+}
+
+string decimal_to_binary(string address){
+    
+    string binary_address;
+    
+    binary_address = bitset<64>(strtoll(address.c_str(), NULL, 10)).to_string();
+    
+    return binary_address;
+    
+}
+
+int read_trace_file(char* file_name, int block_size, int number_lines, int associativity,  int replacement_policy, Cache& cache){
+    
+    ifstream file(file_name);
+    string proper_buffer;
+    string delimiter = " ";
+    
+    string address;
+    string operation;
     
     string offset;
     string set;
     string tag;
     
-    int offset_bits = calculate_offset(block_size);
-    int set_bits = calculate_set(associativity, number_lines);
-    int tag_bits = calculate_tag(offset_bits, set_bits);
+    int position;
     
-    tag = address.substr(0, tag_bits);
-    set = address.substr(tag_bits, set_bits);
-    offset = address.substr(set_bits+tag_bits, offset_bits);
+    int set_bits;
+    int operation_bit;
     
-    cout << tag << endl;
-    cout << set << endl;
-    cout << offset << endl;
+    string binary_address;
+    
+    while (true){
+        if (getline(file, proper_buffer));{
+
+            position = proper_buffer.find(delimiter);
+
+            address = proper_buffer.substr(0, position);
+            
+            operation = proper_buffer.substr(position+delimiter.length(), 1);
+            
+            if (operation == "W")
+                operation_bit = W;
+            else if (operation == "R")
+                operation_bit = R;
+            
+            binary_address = decimal_to_binary(address);
+            split_address(binary_address, block_size, associativity, number_lines, &offset, &set, &tag);   
+            set_bits = strtol(set.c_str(), NULL, 2);
+                                    
+            
+            if (file.eof())
+                break;
+        }
+    }
+    
+    return 0;
     
 }
 
-int main(){
+
+int main(int argc, char *argv[]){
     
     int i =0;
     
@@ -125,14 +158,23 @@ int main(){
     int *number_lines = new int[1];
     int *associativity = new int[1];
     int *replacement_policy =  new int[1];
-
+    
+    string address;
+    string operation;
+    string offset;
+    string set;
+    string tag;
+            
+    read_cache_specfication(argv[1], block_size, number_lines, associativity, replacement_policy);
+        
     
     cout << "Hello, world" << endl;
     cout << "This will be a cache simulator one day." << endl;
-    read_cache_specfication(block_size, number_lines, associativity, replacement_policy);
-    read_trace_file();
-    split_address("0000000101000000011100110111010010001000001101000101100101000100", 64, 8, 512);
+    
+    
+    read_trace_file(argv[2], *block_size, *number_lines, *associativity, *replacement_policy, cache);
+        
+    
     cin >> i;
     
     return 0;
-}
