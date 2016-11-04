@@ -101,6 +101,21 @@ string decimal_to_binary(string address){
     
 }
 
+void create_output_file(long int read_hits, long int read_misses, long int write_hits, long int write_misses, long int accesses){
+    
+    ofstream output_file;
+    
+    output_file.open("output.dat");
+    
+    output_file << "Access count: " << accesses;
+    output_file << "\nWrite hits: " << write_hits;
+    output_file << "\nWrite misses: " << write_misses;
+    output_file << "\nRead hits: " << read_hits;
+    output_file << "\nRead misses: " << read_misses;
+    
+    output_file.close();
+}
+
 int read_trace_file(char* file_name, int block_size, int number_lines, int associativity,  int replacement_policy, Cache& cache){
     
     ifstream file(file_name);
@@ -148,7 +163,6 @@ int read_trace_file(char* file_name, int block_size, int number_lines, int assoc
     return 0;
     
 }
-
 
 int main(int argc, char *argv[]){
     
