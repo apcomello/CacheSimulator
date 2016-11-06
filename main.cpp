@@ -27,12 +27,6 @@ class CacheLine {
         CacheLine();
 };
 
-CacheLine::CacheLine(void){
-    
-    tag = "-1";
-}
-
-
 /*
     CACHE SET
 */
@@ -44,19 +38,6 @@ class CacheSet {
         void prepare_lines();
         int number_set_lines;
 };
-
-CacheSet::CacheSet(int set_lines){
-    
-    number_set_lines = set_lines;
-}
-
-void CacheSet::prepare_lines(){
-    
-    int i =0;
-    
-    for (i=0; i < number_set_lines; i++)
-        tags.push_back(CacheLine());
-}
 
 /*
     CACHE
@@ -122,6 +103,86 @@ void Cache::prepare_cache(){
         _sets[i].prepare_lines();
     }
 
+}
+
+void Cache::LRU_policy(int set_bits, string lookup_tag){
+    rotate(_sets[set_bits].tags.begin(), _sets[set_bits].tags.begin()+1, _sets[set_bits].tags.end());
+    _sets[set_bits].tags.back().tag = lookup_tag;
+}
+
+void Cache::FIFO_policy(int set_bits, string lookup_tag){
+    
+    rotate(_sets[set_bits].tags.begin(), _sets[set_bits].tags.begin()+1, _sets[set_bits].tags.end());
+    _sets[set_bits].tags.back().tag = lookup_tag;
+}
+
+
+int Cache::miss(int set_bits, string lookup_tag, int operation){
+    
+    size_t i = 0;
+        
+    if (operation == W){
+        // cout << "WRITE MISS" << endl;
+        write_misses++;
+    }
+    else if (operation == R){
+        // cout << "READ MISS" << endl;
+        read_misses++;
+    }
+    
+    for (i=0; i < _sets[set_bits].tags.size(); i++){
+        if (_sets[set_bits].tags[i].tag == "-1"){
+            _sets[set_bits].tags[i].tag = lookup_tag;
+            for (i=0; i < _sets[set_bits].tags.size(); i++)
+            
+            return 1;
+        }
+    }
+    
+    if (replacement_policy == FIFO)
+        FIFO_policy(set_bits, lookup_tag);
+    else if (replacement_policy == LRU)
+        LRU_policy(set_bits, lookup_tag);
+    
+    return 1;
+}
+
+int Cache::hit(int set_bits, string lookup_tag, int operation, int index){ 
+        
+    if (operation == W){
+        // cout << "WRITE HIT" << endl;
+        write_hits++;
+    }
+    else if (operation == R){
+        // cout << "READ HIT" << endl;
+        read_hits++;
+    }
+    
+    return 0;
+}
+
+
+int Cache::lookup(int set_bits, string lookup_tag, int operation){
+    
+    size_t i =0;
+    accesses++;
+    
+    for (i=0; i < _sets[set_bits].tags.size(); i++){
+        if (_sets[set_bits].tags[i].tag == lookup_tag){
+            hit(set_bits, lookup_tag, operation, i);
+            return 0;
+        }
+    }
+
+    return miss(set_bits, lookup_tag, operation);
+
+    if (replacement_policy == LRU){
+            _sets[set_bits].tags.erase(_sets[set_bits].tags.begin()+index);
+            _sets[set_bits].tags.push_back(CacheLine());
+            _sets[set_bits].tags.back().tag = lookup_tag;
+    }        
+
+    
 }
 
 /*
@@ -208,11 +269,11 @@ string decimal_to_binary(string address){
     
 }
 
-void create_output_file(long int read_hits, long int read_misses, long int write_hits, long int write_misses, long int accesses){
+void create_output_file(char* file_name, long int read_hits, long int read_misses, long int write_hits, long int write_misses, long int accesses){
     
     ofstream output_file;
     
-    output_file.open("output.dat");
+    output_file.open(file_name);
     
     output_file << "Access count: " << accesses;
     output_file << "\nWrite hits: " << write_hits;
@@ -279,7 +340,7 @@ int main(int argc, char *argv[]){
     int *number_lines = new int[1];
     int *associativity = new int[1];
     int *replacement_policy =  new int[1];
-        
+    
     string address;
     string operation;
     string offset;
@@ -288,15 +349,17 @@ int main(int argc, char *argv[]){
             
     read_cache_specfication(argv[1], block_size, number_lines, associativity, replacement_policy);
         
-    Cache cache(*block_size, *number_lines, *associativity, *replacement_policy);
-        
-    cache.prepare_cache();
-
+    
     cout << "Hello, world" << endl;
     cout << "This will be a cache simulator one day." << endl;
     
+    
     read_trace_file(argv[2], *block_size, *number_lines, *associativity, *replacement_policy, cache);
+        
+    create_output_file(argv[3], cache.read_hits, cache.read_misses, cache.write_hits, cache.write_misses, cache.accesses);
+
     
     cin >> i;
     
     return 0;
+}
