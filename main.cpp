@@ -27,6 +27,12 @@ class CacheLine {
         CacheLine();
 };
 
+CacheLine::CacheLine(void){
+    
+    tag = "-1";
+}
+
+
 /*
     CACHE SET
 */
@@ -38,6 +44,19 @@ class CacheSet {
         void prepare_lines();
         int number_set_lines;
 };
+
+CacheSet::CacheSet(int set_lines){
+    
+    number_set_lines = set_lines;
+}
+
+void CacheSet::prepare_lines(){
+    
+    int i =0;
+    
+    for (i=0; i < number_set_lines; i++)
+        tags.push_back(CacheLine());
+}
 
 /*
     CACHE
@@ -75,6 +94,35 @@ class Cache {
         void FIFO_policy();
         
 };
+
+Cache::Cache(int size_block, int line_numbers, int number_sets, int policy){
+    
+    block_size = size_block;
+    number_lines = line_numbers;
+    associativity = number_sets;
+    replacement_policy = policy;
+    
+    
+    write_hits = 0;
+    write_misses = 0;
+    read_hits = 0;
+    read_misses = 0;
+    accesses = 0;
+
+    
+}
+
+void Cache::prepare_cache(){
+    
+    int i =0;
+    int number_sets = number_lines/associativity;
+    
+    for (i=0; i< number_sets; i++){
+        _sets.push_back(CacheSet(associativity));
+        _sets[i].prepare_lines();
+    }
+
+}
 
 /*
     OTHER FUNCTIONS
@@ -231,7 +279,7 @@ int main(int argc, char *argv[]){
     int *number_lines = new int[1];
     int *associativity = new int[1];
     int *replacement_policy =  new int[1];
-    
+        
     string address;
     string operation;
     string offset;
@@ -240,13 +288,14 @@ int main(int argc, char *argv[]){
             
     read_cache_specfication(argv[1], block_size, number_lines, associativity, replacement_policy);
         
-    
+    Cache cache(*block_size, *number_lines, *associativity, *replacement_policy);
+        
+    cache.prepare_cache();
+
     cout << "Hello, world" << endl;
     cout << "This will be a cache simulator one day." << endl;
     
-    
     read_trace_file(argv[2], *block_size, *number_lines, *associativity, *replacement_policy, cache);
-        
     
     cin >> i;
     
