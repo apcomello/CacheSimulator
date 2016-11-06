@@ -27,6 +27,12 @@ class CacheLine {
         CacheLine();
 };
 
+CacheLine::CacheLine(void){
+    
+    tag = "-1";
+}
+
+
 /*
     CACHE SET
 */
@@ -38,6 +44,19 @@ class CacheSet {
         void prepare_lines();
         int number_set_lines;
 };
+
+CacheSet::CacheSet(int set_lines){
+    
+    number_set_lines = set_lines;
+}
+
+void CacheSet::prepare_lines(){
+    
+    int i =0;
+    
+    for (i=0; i < number_set_lines; i++)
+        tags.push_back(CacheLine());
+}
 
 /*
     CACHE
@@ -57,7 +76,7 @@ class Cache {
         
         void prepare_cache(); //Allocs the necessary memory for all blocks in cache
         
-        int lookup();
+        int lookup(int set_bits, string lookup_tag, int operation);
         
         long int write_hits;
         long int write_misses;
@@ -69,10 +88,10 @@ class Cache {
     private:
     
 
-        int hit();      //Returns a hit
-        int miss();     //Returns a miss
-        void LRU_policy();
-        void FIFO_policy();
+        int hit(int set_bits, string lookup_tag, int operation, int index);      //Returns a hit
+        int miss(int set_bits, string lookup_tag, int operation);     //Returns a miss
+        void LRU_policy(int set_bits, string lookup_tag);
+        void FIFO_policy(int set_bits, string lookup_tag);
         
 };
 
@@ -158,6 +177,13 @@ int Cache::hit(int set_bits, string lookup_tag, int operation, int index){
         read_hits++;
     }
     
+    if (replacement_policy == LRU){
+            _sets[set_bits].tags.erase(_sets[set_bits].tags.begin()+index);
+            _sets[set_bits].tags.push_back(CacheLine());
+            _sets[set_bits].tags.back().tag = lookup_tag;
+    }        
+
+    
     return 0;
 }
 
@@ -175,13 +201,6 @@ int Cache::lookup(int set_bits, string lookup_tag, int operation){
     }
 
     return miss(set_bits, lookup_tag, operation);
-
-    if (replacement_policy == LRU){
-            _sets[set_bits].tags.erase(_sets[set_bits].tags.begin()+index);
-            _sets[set_bits].tags.push_back(CacheLine());
-            _sets[set_bits].tags.back().tag = lookup_tag;
-    }        
-
     
 }
 
@@ -322,7 +341,8 @@ int read_trace_file(char* file_name, int block_size, int number_lines, int assoc
             split_address(binary_address, block_size, associativity, number_lines, &offset, &set, &tag);   
             set_bits = strtol(set.c_str(), NULL, 2);
                                     
-            
+            cache.lookup(set_bits, tag, operation_bit);
+
             if (file.eof())
                 break;
         }
@@ -349,7 +369,10 @@ int main(int argc, char *argv[]){
             
     read_cache_specfication(argv[1], block_size, number_lines, associativity, replacement_policy);
         
-    
+    Cache cache(*block_size, *number_lines, *associativity, *replacement_policy);
+
+    cache.prepare_cache();
+
     cout << "Hello, world" << endl;
     cout << "This will be a cache simulator one day." << endl;
     
