@@ -1,4 +1,3 @@
-#include <vector>
 #include "CacheLine.h"
 #include "CacheSet.h"
 

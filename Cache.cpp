@@ -1,13 +1,6 @@
 #include <iostream>
-#include <fstream>
 #include <string>
-#include <sstream>
 #include <vector>
-#include <cmath>
-#include <bitset>
-#include <stdio.h>
-#include <stdlib.h>
-#include <algorithm>
 #include "CacheSet.h"
 #include "CacheLine.h"
 #include "Cache.h"
@@ -64,11 +57,9 @@ int Cache::miss(int set_bits, string lookup_tag, int operation){
     size_t i = 0;
         
     if (operation == W){
-        // cout << "WRITE MISS" << endl;
         write_misses++;
     }
     else if (operation == R){
-        // cout << "READ MISS" << endl;
         read_misses++;
     }
     
@@ -92,11 +83,9 @@ int Cache::miss(int set_bits, string lookup_tag, int operation){
 int Cache::hit(int set_bits, string lookup_tag, int operation, int index){ 
         
     if (operation == W){
-        // cout << "WRITE HIT" << endl;
         write_hits++;
     }
     else if (operation == R){
-        // cout << "READ HIT" << endl;
         read_hits++;
     }
     

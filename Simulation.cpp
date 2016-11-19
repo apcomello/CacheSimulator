@@ -3,11 +3,7 @@
 #include <string>
 #include <sstream>
 #include <vector>
-#include <cmath>
 #include <bitset>
-#include <stdio.h>
-#include <stdlib.h>
-#include <algorithm>
 #include "CacheSet.h"
 #include "CacheLine.h"
 #include "Cache.h"
@@ -18,7 +14,7 @@ const int FIFO = 0;
 const int W = 1;
 const int R = 0;
 
-using namespace std;
+// using namespace std;
 
 int Simulation::read_cache_specfication(char* file_name, int *block_size, int *number_lines, int *associativity, int *replacement_policy){
     
@@ -26,16 +22,16 @@ int Simulation::read_cache_specfication(char* file_name, int *block_size, int *n
     int position;
     
     
-    string proper_buffer;
-    string delimiter = " = ";
-    string token;
+    std::string proper_buffer;
+    std::string delimiter = " = ";
+    std::string token;
         
-    ifstream file;
+    std::ifstream file;
     
     file.open(file_name, ios::binary | ios::in);
     
     for(i = 0; i < 4; i++){
-        getline(file, proper_buffer);
+        std::getline(file, proper_buffer);
         position = proper_buffer.find(delimiter);
         
         token = proper_buffer.substr(position + delimiter.length());
@@ -76,7 +72,7 @@ int Simulation::calculate_tag(int offset_bits, int set_bits){
     return 64 - offset_bits;
 }
 
-int Simulation::split_address(string address, int block_size, int associativity, int number_lines, string *offset, string *index, string *tag){
+int Simulation::split_address(std::string address, int block_size, int associativity, int number_lines, std::string *offset, std::string *index, std::string *tag){
         
     int offset_bits = calculate_offset(block_size);
     int set_bits = calculate_set(associativity, number_lines);
@@ -90,11 +86,11 @@ int Simulation::split_address(string address, int block_size, int associativity,
     return 0;
 }
 
-string Simulation::decimal_to_binary(string address){
+std::string Simulation::decimal_to_binary(std::string address){
     
-    string binary_address;
+    std::string binary_address;
     
-    binary_address = bitset<64>(strtoll(address.c_str(), NULL, 10)).to_string();
+    binary_address = std::bitset<64>(strtoll(address.c_str(), NULL, 10)).to_string();
     
     return binary_address;
     
@@ -117,26 +113,26 @@ void Simulation::create_output_file(char* file_name, long int read_hits, long in
 
 int Simulation::read_trace_file(char* file_name, int block_size, int number_lines, int associativity,  int replacement_policy, Cache& cache){
         
-    ifstream file(file_name);
-    string proper_buffer;
-    string delimiter = " ";
+    std::ifstream file(file_name);
+    std::string proper_buffer;
+    std::string delimiter = " ";
     
-    string address;
-    string operation;
+    std::string address;
+    std::string operation;
     
-    string offset;
-    string set;
-    string tag;
+    std::string offset;
+    std::string set;
+    std::string tag;
     
     int position;
     
     int set_bits;
     int operation_bit;
     
-    string binary_address;
+    std::string binary_address;
     
     while (true){
-        if (getline(file, proper_buffer));{
+        if (std::getline(file, proper_buffer));{
 
             position = proper_buffer.find(delimiter);
 
