@@ -2,7 +2,6 @@
 #include <fstream>
 #include <string>
 #include <sstream>
-#include <vector>
 #include <cmath>
 #include <bitset>
 #include <stdio.h>
@@ -27,9 +26,9 @@ class Simulation{
 
         int calculate_tag(int offset_bits, int set_bits);
 
-        int split_address(string address, int block_size, int associativity, int number_lines, string *offset, string *index, string *tag);
+        int split_address(std::string address, int block_size, int associativity, int number_lines, std::string *offset, std::string *index, std::string *tag);
 
-        string decimal_to_binary(string address);
+        std::string decimal_to_binary(std::string address);
 
         void create_output_file(char* file_name, long int read_hits, long int read_misses, long int write_hits, long int write_misses, long int accesses);
 

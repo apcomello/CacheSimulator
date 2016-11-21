@@ -5,10 +5,11 @@
 #define CACHESET_H
 
 class CacheSet {
+    
     public:
-        vector<CacheLine> tags;
+        std::vector<CacheLine> tags;     //Vector of lines inside the set
         CacheSet(int set_lines);
-        void prepare_lines();
+        void prepare_lines();       //Creates the structure of the set
         int number_set_lines;
 };
 

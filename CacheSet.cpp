@@ -9,7 +9,7 @@ CacheSet::CacheSet(int set_lines){
 void CacheSet::prepare_lines(){
     
     int i =0;
-    
+    //Adds all the lines in the set
     for (i=0; i < number_set_lines; i++)
         tags.push_back(CacheLine());
 }

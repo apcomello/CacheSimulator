@@ -1,6 +1,11 @@
 #include <iostream>
+#include <fstream>
 #include <string>
+#include <sstream>
 #include <vector>
+#include <bitset>
+#include <cmath>
+#include <algorithm>
 #include "CacheSet.h"
 #include "CacheLine.h"
 #include "Cache.h"
@@ -25,7 +30,6 @@ Cache::Cache(int size_block, int line_numbers, int number_sets, int policy){
     read_misses = 0;
     accesses = 0;
 
-    
 }
 
 void Cache::prepare_cache(){
@@ -33,6 +37,7 @@ void Cache::prepare_cache(){
     int i =0;
     int number_sets = number_lines/associativity;
     
+    // Line allocation for the specified cache
     for (i=0; i< number_sets; i++){
         _sets.push_back(CacheSet(associativity));
         _sets[i].prepare_lines();
@@ -40,22 +45,29 @@ void Cache::prepare_cache(){
 
 }
 
-void Cache::LRU_policy(int set_bits, string lookup_tag){
-    rotate(_sets[set_bits].tags.begin(), _sets[set_bits].tags.begin()+1, _sets[set_bits].tags.end());
+/*
+    REPLACEMENT POLICIES
+*/
+
+void Cache::LRU_policy(int set_bits, std::string lookup_tag){
+    std::rotate(_sets[set_bits].tags.begin(), _sets[set_bits].tags.begin()+1, _sets[set_bits].tags.end());
     _sets[set_bits].tags.back().tag = lookup_tag;
 }
 
-void Cache::FIFO_policy(int set_bits, string lookup_tag){
+void Cache::FIFO_policy(int set_bits, std::string lookup_tag){
     
-    rotate(_sets[set_bits].tags.begin(), _sets[set_bits].tags.begin()+1, _sets[set_bits].tags.end());
+    std::rotate(_sets[set_bits].tags.begin(), _sets[set_bits].tags.begin()+1, _sets[set_bits].tags.end());
     _sets[set_bits].tags.back().tag = lookup_tag;
 }
 
+/*
+    BASIC CACHE OPERATIONS
+*/
 
-int Cache::miss(int set_bits, string lookup_tag, int operation){
+int Cache::miss(int set_bits, std::string lookup_tag, int operation){
     
     size_t i = 0;
-        
+
     if (operation == W){
         write_misses++;
     }
@@ -63,15 +75,17 @@ int Cache::miss(int set_bits, string lookup_tag, int operation){
         read_misses++;
     }
     
+    // Adding the missed address to the cache
     for (i=0; i < _sets[set_bits].tags.size(); i++){
-        if (_sets[set_bits].tags[i].tag == "-1"){
-            _sets[set_bits].tags[i].tag = lookup_tag;
-            for (i=0; i < _sets[set_bits].tags.size(); i++)
-            
+        if (_sets[set_bits].tags[i].tag == "-1"){   // Case in which there are still unused blocks
+            _sets[set_bits].tags.erase(_sets[set_bits].tags.begin()+i);
+            _sets[set_bits].tags.push_back(CacheLine());
+            _sets[set_bits].tags.back().tag = lookup_tag;
             return 1;
         }
     }
     
+    // Case in wich all blocks are already used
     if (replacement_policy == FIFO)
         FIFO_policy(set_bits, lookup_tag);
     else if (replacement_policy == LRU)
@@ -80,8 +94,8 @@ int Cache::miss(int set_bits, string lookup_tag, int operation){
     return 1;
 }
 
-int Cache::hit(int set_bits, string lookup_tag, int operation, int index){ 
-        
+int Cache::hit(int set_bits, std::string lookup_tag, int operation, int index){ 
+
     if (operation == W){
         write_hits++;
     }
@@ -89,26 +103,25 @@ int Cache::hit(int set_bits, string lookup_tag, int operation, int index){
         read_hits++;
     }
     
+    // Treatment needed for the LRU algorithm
     if (replacement_policy == LRU){
             _sets[set_bits].tags.erase(_sets[set_bits].tags.begin()+index);
             _sets[set_bits].tags.push_back(CacheLine());
             _sets[set_bits].tags.back().tag = lookup_tag;
     }        
 
-    
     return 0;
 }
 
 
-int Cache::lookup(int set_bits, string lookup_tag, int operation){
+int Cache::lookup(int set_bits, std::string lookup_tag, int operation){
     
-    size_t i =0;
+    size_t i = 0;
     accesses++;
     
     for (i=0; i < _sets[set_bits].tags.size(); i++){
         if (_sets[set_bits].tags[i].tag == lookup_tag){
-            hit(set_bits, lookup_tag, operation, i);
-            return 0;
+            return hit(set_bits, lookup_tag, operation, i);
         }
     }
 
