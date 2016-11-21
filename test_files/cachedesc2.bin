@@ -1,0 +1,4 @@
+line size = 8
+number of lines = 8
+associativity = 2
+replacement policy = FIFO

@@ -1,0 +1,21 @@
+Lines: 8
+Sets: 4
+Lines per set: 2
+Words per line: 8
+Bytes per word: 1
+Policy: FIFO
+Address format (T = tag, S = set, W = word, B = byte):
+TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTSSWWW
+WRITE MISS
+WRITE MISS
+READ HIT
+READ HIT
+READ MISS
+READ HIT
+Access count:6
+Read hits:3
+Read misses:1
+Write hits:0
+Write misses:2
+Total Hits:3
+Total Misses:3
